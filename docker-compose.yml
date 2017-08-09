@@ -1,0 +1,51 @@
+version: '2'
+
+services:
+  # Define an InfluxDB service
+  influxdb:
+    image: influxdb:1.0.0-rc1
+    volumes:
+      - ./data/influxdb:/var/lib/influxdb
+    ports:
+      - "8086:8086"
+      - "8083:8083"
+  # Define a Kapacitor service
+  kapacitor:
+    image: kapacitor:1.0.0-rc1
+    environment:
+      KAPACITOR_HOSTNAME: kapacitor
+      KAPACITOR_INFLUXDB_0_URLS_0: http://influxdb:8086
+    volumes:
+      - ./data/kapacitor:/var/lib/kapacitor
+    links:
+      - influxdb
+    ports:
+      - "9092:9092"
+  # Define a service for using the influx CLI tool.
+  # docker-compose run influxdb-cli
+  influxdb-cli:
+    image: influxdb:1.0.0-rc1
+    entrypoint:
+      - influx
+      - -host
+      - influxdb
+    links:
+      - influxdb
+  # Define a service for using the kapacitor CLI tool.
+  # docker-compose run kapacitor-cli
+  kapacitor-cli:
+    image: kapacitor:1.0.0-rc1
+    environment:
+      KAPACITOR_URL: http://kapacitor:9092
+    volumes:
+      - ./data/tick-scripts:/var/lib/kapacitor
+    links:
+      - kapacitor
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    links:
+      - influxdb
+    ports:
+      - "80:3000"
