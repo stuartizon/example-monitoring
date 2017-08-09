@@ -15,6 +15,9 @@ services:
     environment:
       KAPACITOR_HOSTNAME: kapacitor
       KAPACITOR_INFLUXDB_0_URLS_0: http://influxdb:8086
+      KAPACITOR_SLACK_ENABLED: "true"
+      KAPACITOR_SLACK_URL: https://hooks.slack.com/services/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
+      KAPACITOR_CHANNEL: "#stuart-test"
     volumes:
       - ./data/kapacitor:/var/lib/kapacitor
     links:
@@ -35,6 +38,7 @@ services:
   # docker-compose run kapacitor-cli
   kapacitor-cli:
     image: kapacitor:1.0.0-rc1
+    entrypoint: /var/lib/kapacitor/init.sh
     environment:
       KAPACITOR_URL: http://kapacitor:9092
     volumes:
